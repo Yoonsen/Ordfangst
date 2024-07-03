@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-ordfangst
+  annotations:
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  ingressClassName: nginx
+  tls:
+  - secretName: nginx-ingress-dh-secret
+    hosts:
+     - "dh.nb.no"
+  rules:
+  - host: "dh.nb.no"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/ordfangst"
+        backend:
+          service:
+            name: ordfangst-service
+            port:
+              number: 80

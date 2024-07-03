@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ordfangst-deployment
+  labels:
+    app: ordfangst
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ordfangst
+  template:
+    metadata:
+      labels:
+        app: ordfangst
+    spec:
+      containers:
+      - name: ordfangst
+        image: gcr.io/norwegian-language-bank/ordfangst:09e2eb99-4930-49ac-ba29-ba5d2d0c0550
+        command: [ "/bin/bash" ]
+        args: [ "-c", "streamlit run wildcards.py --server.port 8501 --server.baseUrlPath /ordfangst --browser.gatherUsageStats=False"]
+        ports:
+        - containerPort: 8501
+        resources:
+          limits:
+            cpu: 250m
+            ephemeral-storage: 256Mi
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            ephemeral-storage: 256Mi
+            memory: 512Mi
