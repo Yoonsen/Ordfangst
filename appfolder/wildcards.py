@@ -19,6 +19,8 @@ image = Image.open('DHlab_logo_web_en_black.png')
 st.image(image, width = 200, )
 #st.markdown('Les mer på [DHLAB-siden](https://nb.no/dh-lab/)')
 
+### Organiserer med kolonner
+
 wordcol, _,  expcol = st.columns([2, 1, 2])
 
 with wordcol:
@@ -29,6 +31,8 @@ with expcol:
     with st.expander("Innstillinger"):
         
         factorcol, freqlimcol, limcol = st.columns([1,1,1])
+
+        ## har satt tilbake til kontekstgruppering - forskjellige grunner... LGJ 4. juli 2024 ###
         
         with factorcol:
             factor = st.number_input("Matchlengde", min_value=-10, value=st.session_state.get('factor',20), help="Tallet som skrives inn her legges til lengden på ordet, målt i antall tegn inkludert * og bokstaver. Små tall vil typisk lage bøyningsparadigmer, mens store tall gir sammensetninger. Angivelsen kan også være negativ, men ikke mindre enn minus antall * i søkeuttrykket", key="factor")
@@ -52,6 +56,7 @@ st.write(' ')
 
 data_col, year_col = st.columns([2,2])
 
+## ---- Organiserer kolonnene med kontekstgruppering --- LGJ: 4.7.2024 ###
 with data_col:
     options = st.data_editor(
         data, 
