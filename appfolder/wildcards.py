@@ -42,7 +42,8 @@ with expcol:
         
         with limcol:
             limit = st.number_input("Resultatstørrelse", min_value=5, value=1000)
-
+            
+        from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
 
 df = api.wildcard_search(word, factor=st.session_state['factor'], freq_limit=freqlim, limit=limit).reset_index(names=["words"])
 data = df.sort_values(by="freq", ascending=False)
@@ -69,12 +70,12 @@ with data_col:
         },
     #    disabled="freq",
         hide_index=True,
-        
+        use_container_width = True
     )
     chosen = options[options.choice].words.tolist()
 
 with year_col:
-    from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
-    st.write('---')
+    #from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
+
     lines = dh.Ngram(chosen, from_year=from_year, to_year=to_year).frame
     st.line_chart(lines)
