@@ -3,21 +3,22 @@ import streamlit as st
 import dhlab.api.dhlab_api as api
 import dhlab as dh 
 import pandas as pd
-from PIL import Image
-#import plotly.express as px
+import utils
 
 
-st.set_page_config(page_title="Wildcards", layout="wide", initial_sidebar_state="auto", menu_items=None)
+@st.cache_data
+def to_excel(df):
+    return utils.to_excel(df)
+
+
+st.set_page_config(page_title="Ordfangst", layout="wide", initial_sidebar_state="auto", menu_items=None)
 st.session_state.update(st.session_state)
 
-st.html(body = """
-<style> body * {font-family:'DM Sans'}</style>
-""")
+st.markdown(utils.style,unsafe_allow_html=True)
+st.markdown(utils.dhlab_header_html, unsafe_allow_html=True)
 
-# TODO: Add standard app header with logo + links + info
-image = Image.open('DHlab_logo_web_en_black.png')
-st.image(image, width = 200, )
-#st.markdown('Les mer på [DHLAB-siden](https://nb.no/dh-lab/)')
+st.title("Ordfangst")
+st.subheader("Finn ord og sammenstillinger i NBs bokkorpus")
 
 ### Organiserer med kolonner
 
