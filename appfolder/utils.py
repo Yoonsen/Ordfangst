@@ -7,7 +7,7 @@ import pandas as pd
 style = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">'
 
 ## NB symbol
-nb_logo_svg = """<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 350" width="60px" height="60px">
+nb_logo_svg = """<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 325 350" width="60px" height="60px">
     <path d="m96.29,163.63c6.79,0,12.29-5.51,12.29-12.29s-5.5-12.29-12.29-12.29-12.29,5.51-12.29,12.29,5.5,12.29,12.29,12.29Z"/>
     <path d="m220.13,346.62c6.79,0,12.29-5.51,12.29-12.29s-5.5-12.29-12.29-12.29-12.29,5.51-12.29,12.29,5.5,12.29,12.29,12.29Z"/>
     <path d="m127.41,77v227.61h144.34V77H127.41Zm30.61,86.63c-6.79,0-12.29-5.51-12.29-12.29s5.5-12.29,12.29-12.29,12.29,5.51,12.29,12.29-5.5,12.29-12.29,12.29Zm61.21,121.58c-6.79,0-12.29-5.51-12.29-12.29s5.5-12.29,12.29-12.29,12.29,5.51,12.29,12.29-5.5,12.29-12.29,12.29Zm0-60.6c-6.79,0-12.29-5.51-12.29-12.29s5.5-12.29,12.29-12.29,12.29,5.51,12.29,12.29-5.5,12.29-12.29,12.29Zm0-60.98c-6.79,0-12.29-5.51-12.29-12.29s5.5-12.29,12.29-12.29,12.29,5.51,12.29,12.29-5.5,12.29-12.29,12.29Z"/>
@@ -22,17 +22,19 @@ nb_logo_html = f"""
 """
 
 ### Icons
-github_icon = """<a href="https://github.com/Yoonsen/Ordfangst" target="_blank" style="color: black; text-decoration: none; padding-left: 5px;">
-    <i class="fab fa-github fa-1x" style="color: #262730;"></i>
+repo_link = "https://github.com/Yoonsen/Ordfangst"
+
+github_icon = f"""<a href="{repo_link}" target="_blank" style="color: black; text-decoration: none; padding-left: 5px;">
+<i class="fab fa-github fa-1x"></i>
 </a>"""
 
-email_icon = """<a href="https://www.nb.no/dh-lab/kontakt/" target="_blank" style="padding-left: 5px;">
-    <i  class="fas" style="font-size:15px; color: #262730;">&#xf0e0;</i>
+email_icon = """<a href="https://www.nb.no/dh-lab/kontakt/" target="_blank" style="color: black; padding-left: 5px;">
+<i class="fas" style="font-size:15px;">&#xf0e0;</i>
 </a>
 </div>
 """
 
-dhlab_header_html =f"""<div style="display: inline-block; clear: both; padding-bottom:20px">
+dhlab_header_html =f"""<div style="display: inline-block; clear: both; padding-bottom:20px; opacity:0.75;">
 {nb_logo_html}
 {github_icon}
 {email_icon}
