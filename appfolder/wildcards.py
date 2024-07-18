@@ -10,6 +10,11 @@ def to_excel(df):
     return utils.to_excel(df)
 
 
+@st.cache_data
+def load_corpus(**kwargs):
+    return dh.Corpus(**kwargs)
+
+
 st.set_page_config(
     page_title="Ordfangst", layout="wide", initial_sidebar_state="auto", menu_items=None
 )
@@ -88,7 +93,7 @@ else:
 
     ## append to container right below the search bar (wordcol) AFTER the results are ready
     download_button = wordcol.download_button(
-        "Last ned data", to_excel(data), filnavn, help="Åpnes i Excel eller tilsvarende"
+        ":arrow_down: Excel", to_excel(data), filnavn, help="Last ned søketreffene til en excel-fil"
     )
     if download_button:
         pass
@@ -99,13 +104,13 @@ else:
 
     ## ---- Organiserer kolonnene med kontekstgruppering --- LGJ: 4.7.2024 ###
     with data_col:
-        
+        st.subheader("Søketreff")
         data["choice"] = False
         options = st.data_editor(
             data,
             column_config={
                 "choice": st.column_config.CheckboxColumn(
-                    "Valgt",
+                    "valgt",
                     help="Velg ord du vil se trendlinjer for",
                     # default=False,
                 )
@@ -118,7 +123,50 @@ else:
 
 
     with viz_col:
-        from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
+        if chosen:
+            st.subheader("Trendlinjer")
+            
+            from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
 
-        lines = dh.Ngram(chosen, from_year=from_year, to_year=to_year).frame
-        st.line_chart(lines)
+            lines = dh.Ngram(chosen, from_year=from_year, to_year=to_year).frame
+            st.line_chart(lines)
+ 
+        else:
+            st.write("Velg ord i tabellen til venstre for å se trendlinjer")
+    
+    if chosen: 
+        st.subheader("Konkordanser")
+    
+        try:
+            word_query = " OR ".join(chosen)
+            _corpus = load_corpus(fulltext=word_query, from_year=from_year, to_year=to_year)
+            _concs = dh.Concordance(corpus=_corpus, query=word_query)
+
+            concs = utils.format_conc_table(_corpus, _concs)
+            
+            st.dataframe(
+                concs,
+                column_config={
+                    "URL": st.column_config.LinkColumn(
+                        "nb.no",
+                        help="Les i Nettbiblioteket",
+                        display_text="🔗",
+                        disabled=True,
+                        width="small", 
+                    ),
+                    "År": st.column_config.DateColumn(
+                        "Publikasjonsår",
+                        format="YYYY",
+                        width="small",
+                    )
+                },
+                #disabled="urn",
+                hide_index=True,
+                use_container_width=True,
+            )
+        except Exception as e:
+            st.error(f"Kunne ikke hente konkordanser: {e}")
+    
+    
+        
+

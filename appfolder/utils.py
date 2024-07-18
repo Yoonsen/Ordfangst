@@ -49,3 +49,28 @@ def to_excel(df):
         df.to_excel(writer, index=False, sheet_name="Sheet1")
     processed_data = output.getvalue()
     return processed_data
+
+def format_concordances(conc_series):
+    concs = conc_series.apply(split_bold_text)
+    return pd.DataFrame(concs.tolist(), columns=["Før", "Ord", "Etter"])    
+
+def split_bold_text(text):
+    return [z for y in text.split("<b>") for z in y.split("</b>")]
+
+def extract_html_link(link_text):
+    return link_text.split("href = '")[1].split("'")[0]
+
+def format_conc_table(corpus, concs):
+    concs_meta = concs.frame.merge(corpus.frame, on="urn", how="left")
+    
+    contexts = concs_meta.concordance.apply(split_bold_text).tolist()
+    multicol = pd.DataFrame(contexts, columns=["Før", "Ord", "Etter"])
+    
+    multicol["URL"] = concs_meta.link.apply(extract_html_link)
+
+    multicol["Tittel"] = concs_meta.title                
+    multicol["Forfatter"] = concs_meta.authors
+    multicol["År"] = concs_meta.year
+    multicol["Dokument-type"] = concs_meta.doctype
+    return multicol
+    
