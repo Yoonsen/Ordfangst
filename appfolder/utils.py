@@ -44,23 +44,28 @@ dhlab_header_html =f"""<div style="display: inline-block; clear: both; padding-b
 
 
 
-def to_excel(df):
+def to_excel(*dfs):
     """Make an excel object out of a dataframe as an IO-object"""
     output = BytesIO()
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        df.to_excel(writer, index=False, sheet_name="Sheet1")
+    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        for i, df in enumerate(dfs):
+            df.to_excel(writer, sheet_name=f"Ark{i+1}")
     processed_data = output.getvalue()
     return processed_data
+
 
 def format_concordances(conc_series):
     concs = conc_series.apply(split_bold_text)
     return pd.DataFrame(concs.tolist(), columns=["Før", "Ord", "Etter"])    
 
+
 def split_bold_text(text):
     return [z for y in text.split("<b>") for z in y.split("</b>")]
 
+
 def extract_html_link(link_text):
     return link_text.split("href = '")[1].split("'")[0]
+
 
 def format_conc_table(corpus, concs):
     concs_meta = concs.frame.merge(corpus.frame, on="urn", how="left")
@@ -75,4 +80,3 @@ def format_conc_table(corpus, concs):
     multicol["År"] = concs_meta.year
     multicol["Dokument-type"] = concs_meta.doctype
     return multicol
-    

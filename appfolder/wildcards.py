@@ -126,10 +126,29 @@ else:
         if chosen:
             st.subheader("Trendlinjer")
             
-            from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
+            mode_col,  year_col, button_col = st.columns([1,4, 1])
+            with mode_col:
+                mode = st.radio("Frekvenstype", ["Absolutt", "Relativ"], index=0)
+                
+            with year_col:
+                from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
 
-            lines = dh.Ngram(chosen, from_year=from_year, to_year=to_year).frame
+            lines = dh.Ngram(chosen, from_year=from_year, to_year=to_year, mode=mode).frame
+            
             st.line_chart(lines)
+            
+            with button_col:
+                
+                ngram_download_button = st.download_button( # place below the mode settings
+                    ":arrow_down:",
+                    to_excel(lines), 
+                    f"ngram_{word.strip('*')}_{mode}_{from_year}-{to_year}.xlsx", 
+                    help="Last ned data til en excel-fil"
+                )
+                
+                if ngram_download_button:
+                    pass
+
  
         else:
             st.write("Velg ord i tabellen til venstre for å se trendlinjer")
