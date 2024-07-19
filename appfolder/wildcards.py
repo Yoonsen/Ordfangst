@@ -16,7 +16,7 @@ def load_corpus(**kwargs):
 
 
 st.set_page_config(
-    page_title="Ordfangst", layout="wide", initial_sidebar_state="auto", menu_items=None
+    page_title="Ordfangst", layout="wide", initial_sidebar_state="auto", menu_items=None, page_icon=utils.nb_favicon,
 )
 st.session_state.update(st.session_state)
 
