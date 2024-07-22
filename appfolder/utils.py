@@ -44,12 +44,13 @@ dhlab_header_html =f"""<div style="display: inline-block; clear: both; padding-b
 
 
 
-def to_excel(*dfs):
+def to_excel(*dfs: list[pd.DataFrame]) -> BytesIO:
     """Make an excel object out of a dataframe as an IO-object"""
     output = BytesIO()
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
         for i, df in enumerate(dfs):
-            df.to_excel(writer, sheet_name=f"Ark{i+1}")
+            #assert isinstance(df, pd.DataFrame), f"Object {i} is not a pandas dataframe: {type(df)}"
+            df.to_excel(writer, sheet_name=f"Ark{i+1}", index=False)
     processed_data = output.getvalue()
     return processed_data
 
@@ -60,23 +61,37 @@ def format_concordances(conc_series):
 
 
 def split_bold_text(text):
-    return [z for y in text.split("<b>") for z in y.split("</b>")]
-
+    hits = text.split("<b>")
+    prior = hits[0]
+    rest = hits[1].split("</b>")
+    word = rest[0]
+    after = "".join(rest[1:])
+    
+    return {"Før": prior, "Ord": word, "Etter": after}
 
 def extract_html_link(link_text):
-    return link_text.split("href = '")[1].split("'")[0]
+    return link_text.split("href = '")[1].split("'")[0] 
 
 
-def format_conc_table(corpus, concs):
-    concs_meta = concs.frame.merge(corpus.frame, on="urn", how="left")
+def format_conc_table(corpus: pd.DataFrame, concs: pd.DataFrame) -> pd.DataFrame:
+    concs_meta = concs.merge(corpus, on="urn", how="left")
     
     contexts = concs_meta.concordance.apply(split_bold_text).tolist()
-    multicol = pd.DataFrame(contexts, columns=["Før", "Ord", "Etter"])
+    print(contexts)
+    multicol = pd.DataFrame(contexts)
+#    multicol.rename(columns={0:"Før", 1:"Ord",2:"Etter"}, inplace=True)
+    
+  #  if multicol.shape[1] == 5:
+ #       multicol.rename(columns={3:"e2", 4: "e3"}, inplace=True)
+   #     multi_occ = multicol.loc[:,"e2"].notna()
+    #    multicol.loc[multi_occ, "Etter"] = multicol[multi_occ].apply(lambda x: x.Etter + x.e2 + x.e3, axis=1)
+     #   multicol.drop(columns=["e2", "e3"], inplace=True)
     
     multicol["URL"] = concs_meta.link.apply(extract_html_link)
+    multicol["URL"] = multicol.URL +  "?page=0&searchText=" + multicol.Ord.str.lower()
 
     multicol["Tittel"] = concs_meta.title                
     multicol["Forfatter"] = concs_meta.authors
-    multicol["År"] = concs_meta.year
-    multicol["Dokument-type"] = concs_meta.doctype
+    multicol["Årstall"] = concs_meta.year
+    multicol["Type"] = concs_meta.doctype
     return multicol
