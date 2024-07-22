@@ -77,7 +77,7 @@ def format_conc_table(corpus: pd.DataFrame, concs: pd.DataFrame) -> pd.DataFrame
     concs_meta = concs.merge(corpus, on="urn", how="left")
     
     contexts = concs_meta.concordance.apply(split_bold_text).tolist()
-    print(contexts)
+    
     multicol = pd.DataFrame(contexts)
 #    multicol.rename(columns={0:"Før", 1:"Ord",2:"Etter"}, inplace=True)
     

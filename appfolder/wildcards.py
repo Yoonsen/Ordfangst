@@ -127,7 +127,7 @@ else:
                 mode = st.radio("Frekvenstype", ["Absolutt", "Relativ"], index=0)
                 
             with year_col:
-                from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
+                from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=st.session_state.get("timeperiod", (1800, 2024)), key="timeperiod")
 
             ngrams = dh.Ngram(chosen, from_year=from_year, to_year=to_year, mode=mode).frame
             
