@@ -1,4 +1,5 @@
 
+import pandas as pd
 import streamlit as st
 import dhlab.api.dhlab_api as api
 import dhlab as dh
@@ -6,8 +7,8 @@ import utils
 
 
 @st.cache_data
-def to_excel(df):
-    return utils.to_excel(df)
+def to_excel(dfs):
+    return utils.to_excel(*dfs)
 
 
 @st.cache_data
@@ -16,7 +17,7 @@ def load_corpus(**kwargs):
 
 
 st.set_page_config(
-    page_title="Ordfangst", layout="wide", initial_sidebar_state="auto", menu_items=None
+    page_title="Ordfangst", layout="wide", initial_sidebar_state="auto", menu_items=None, page_icon=utils.nb_favicon,
 )
 st.session_state.update(st.session_state)
 
@@ -84,20 +85,15 @@ df = api.wildcard_search(
 ).reset_index(names=["ord"]).rename(columns={"freq": "frekvens"})
  
  
+# Gather data results for multisheet-downloading
+to_download = []
 ### Display results
-
 if df.empty:
     st.write("") # Before searching, the data editor will not be displayed
 else:
     data = df.sort_values(by="frekvens", ascending=False)    
-
-    ## append to container right below the search bar (wordcol) AFTER the results are ready
-    download_button = wordcol.download_button(
-        ":arrow_down: Excel", to_excel(data), filnavn, help="Last ned søketreffene til en excel-fil"
-    )
-    if download_button:
-        pass
-    
+    to_download.append(data.copy())
+        
     st.write("") ## add space
     
     data_col, viz_col = st.columns([2, 2])
@@ -126,10 +122,21 @@ else:
         if chosen:
             st.subheader("Trendlinjer")
             
-            from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
+            mode_col,  year_col = st.columns([1,2 ])
+            with mode_col:
+                mode = st.radio("Frekvenstype", ["Absolutt", "Relativ"], index=0)
+                
+            with year_col:
+                from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
 
-            lines = dh.Ngram(chosen, from_year=from_year, to_year=to_year).frame
-            st.line_chart(lines)
+            ngrams = dh.Ngram(chosen, from_year=from_year, to_year=to_year, mode=mode).frame
+            
+            st.line_chart(ngrams)
+            
+            trendlines = ngrams.copy()
+            trendlines["Årstall"] = trendlines.index
+            trendlines.reset_index(drop=True, inplace=True)
+            to_download.append(trendlines[["Årstall"] + chosen])
  
         else:
             st.write("Velg ord i tabellen til venstre for å se trendlinjer")
@@ -139,10 +146,17 @@ else:
     
         try:
             word_query = " OR ".join(chosen)
-            _corpus = load_corpus(fulltext=word_query, from_year=from_year, to_year=to_year)
-            _concs = dh.Concordance(corpus=_corpus, query=word_query)
+            _corpus = load_corpus(fulltext=word_query, from_year=from_year, to_year=to_year, limit="9999")
 
-            concs = utils.format_conc_table(_corpus, _concs)
+            _w_concs = []
+            for w in chosen:
+                w_concs = dh.Concordance(corpus=_corpus, query=w, limit=5000)
+                _w_concs.append(w_concs.frame)
+
+            _concs = pd.concat(_w_concs, axis=0)
+    
+            concs = utils.format_conc_table(_corpus.frame, _concs)
+            to_download.append(concs.sort_values(by="Årstall"))
             
             st.dataframe(
                 concs,
@@ -154,11 +168,11 @@ else:
                         disabled=True,
                         width="small", 
                     ),
-                    "År": st.column_config.DateColumn(
-                        "Publikasjonsår",
-                        format="YYYY",
-                        width="small",
-                    )
+                  #  "Årstall": st.column_config.DateColumn(
+                   #     "Årstall",
+                   #     format="YYYY",
+                    #    width="small",
+                   # )
                 },
                 #disabled="urn",
                 hide_index=True,
@@ -168,5 +182,14 @@ else:
             st.error(f"Kunne ikke hente konkordanser: {e}")
     
     
-        
+    
+    full_download_button = data_col.download_button( # place right below the wordlist AFTER the results are ready
 
+        ":arrow_down: Excel",
+        to_excel(to_download), 
+        filnavn, #f"ordfangst_{word.strip('*')}_{from_year}-{to_year}.xlsx", 
+        help="Last ned data til en excel-fil"
+    )
+    
+    if full_download_button:
+        pass
