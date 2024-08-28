@@ -124,12 +124,18 @@ else:
             
             mode_col,  year_col = st.columns([1,2 ])
             with mode_col:
-                mode = st.radio("Frekvenstype", ["Absolutt", "Relativ"], index=0)
+                # LGJ: setter valgene i små bokstaver for at det skal virke med mode
+                # kan beholde og gjøre x.lower() i stedet
                 
+                mode = st.radio("Frekvenstype", ["absolutt", "relativ"], index=0)
+
             with year_col:
                 from_year, to_year = st.select_slider("Årstall", options=list(range(1800, 2025, 1)), value=(1800, 2024))
-
-            ngrams = dh.Ngram(chosen, from_year=from_year, to_year=to_year, mode=mode).frame
+                
+            # LGJ gjør nram for både avis og bok
+            
+            ngrams = pd.concat([dh.Ngram(chosen, from_year=from_year, to_year=to_year, mode=mode, doctype="bok").frame,dh.Ngram(chosen, from_year=from_year, to_year=to_year, mode=mode, doctype="avis").frame])
+            ngrams = ngrams.groupby(ngrams.index).sum()
             
             st.line_chart(ngrams)
             
@@ -144,44 +150,49 @@ else:
     if chosen: 
         st.subheader("Konkordanser")
     
-        try:
-            word_query = " OR ".join(chosen)
-            _corpus = load_corpus(fulltext=word_query, from_year=from_year, to_year=to_year, limit="9999")
 
-            _w_concs = []
-            for w in chosen:
-                w_concs = dh.Concordance(corpus=_corpus, query=w, limit=5000)
-                _w_concs.append(w_concs.frame)
+        word_query = " OR ".join(chosen)
+        #st.write(f"Let etter dokumenter med {word_query}")
 
-            _concs = pd.concat(_w_concs, axis=0)
+        ## LGJ: lar konk trigges av en knapp
+        if st.button(f"Finn konkordanser for {word_query}"):
+            try:
+                _corpus = load_corpus(fulltext=word_query, from_year=from_year, to_year=to_year, limit="1000")
     
-            concs = utils.format_conc_table(_corpus.frame, _concs)
-            to_download.append(concs.sort_values(by="Årstall"))
-            
-            st.dataframe(
-                concs,
-                column_config={
-                    "URL": st.column_config.LinkColumn(
-                        "nb.no",
-                        help="Les i Nettbiblioteket",
-                        display_text="🔗",
-                        disabled=True,
-                        width="small", 
-                    ),
-                  #  "Årstall": st.column_config.DateColumn(
-                   #     "Årstall",
-                   #     format="YYYY",
-                    #    width="small",
-                   # )
-                },
-                #disabled="urn",
-                hide_index=True,
-                use_container_width=True,
-            )
-        except Exception as e:
-            st.error(f"Kunne ikke hente konkordanser: {e}")
+                _w_concs = []
+                for w in chosen:
+                    w_concs = dh.Concordance(corpus=_corpus, query=w, limit=5000)
+                    _w_concs.append(w_concs.frame)
     
-    
+                _concs = pd.concat(_w_concs, axis=0)
+        
+                concs = utils.format_conc_table(_corpus.frame, _concs)
+                to_download.append(concs.sort_values(by="Årstall"))
+                
+                st.dataframe(
+                    concs,
+                    column_config={
+                        "URL": st.column_config.LinkColumn(
+                            "nb.no",
+                            help="Les i Nettbiblioteket",
+                            display_text="🔗",
+                            disabled=True,
+                            width="small", 
+                        ),
+                      #  "Årstall": st.column_config.DateColumn(
+                       #     "Årstall",
+                       #     format="YYYY",
+                        #    width="small",
+                       # )
+                    },
+                    #disabled="urn",
+                    hide_index=True,
+                    use_container_width=True,
+                )
+            except Exception as e:
+                st.error(f"Kunne ikke hente konkordanser: {e}")
+
+
     
     full_download_button = data_col.download_button( # place right below the wordlist AFTER the results are ready
 
