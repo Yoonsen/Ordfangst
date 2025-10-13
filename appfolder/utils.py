@@ -1,9 +1,9 @@
 from io import BytesIO
+
 import pandas as pd
 
-
 # External stylesheet to get the icons
-#style = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">'
+# style = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">'
 style = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">'
 
 ## NB symbol
@@ -36,12 +36,11 @@ email_icon = """<a href="https://www.nb.no/dh-lab/kontakt/" target="_blank" styl
 </div>
 """
 
-dhlab_header_html =f"""<div style="display: inline-block; clear: both; padding-bottom:20px; opacity:0.75;">
+dhlab_header_html = f"""<div style="display: inline-block; clear: both; padding-bottom:20px; opacity:0.75;">
 {nb_logo_html}
 {github_icon}
 {email_icon}
 </div>"""
-
 
 
 def to_excel(*dfs: list[pd.DataFrame]) -> BytesIO:
@@ -49,15 +48,15 @@ def to_excel(*dfs: list[pd.DataFrame]) -> BytesIO:
     output = BytesIO()
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
         for i, df in enumerate(dfs):
-            #assert isinstance(df, pd.DataFrame), f"Object {i} is not a pandas dataframe: {type(df)}"
-            df.to_excel(writer, sheet_name=f"Ark{i+1}", index=False)
+            # assert isinstance(df, pd.DataFrame), f"Object {i} is not a pandas dataframe: {type(df)}"
+            df.to_excel(writer, sheet_name=f"Ark{i + 1}", index=False)
     processed_data = output.getvalue()
     return processed_data
 
 
 def format_concordances(conc_series):
     concs = conc_series.apply(split_bold_text)
-    return pd.DataFrame(concs.tolist(), columns=["Før", "Ord", "Etter"])    
+    return pd.DataFrame(concs.tolist(), columns=["Før", "Ord", "Etter"])
 
 
 def split_bold_text(text):
@@ -66,31 +65,32 @@ def split_bold_text(text):
     rest = hits[1].split("</b>")
     word = rest[0]
     after = "".join(rest[1:])
-    
+
     return {"Før": prior, "Ord": word, "Etter": after}
 
+
 def extract_html_link(link_text):
-    return link_text.split("href = '")[1].split("'")[0] 
+    return link_text.split("href = '")[1].split("'")[0]
 
 
 def format_conc_table(corpus: pd.DataFrame, concs: pd.DataFrame) -> pd.DataFrame:
     concs_meta = concs.merge(corpus, on="urn", how="left")
-    
+
     contexts = concs_meta.concordance.apply(split_bold_text).tolist()
     print(contexts)
     multicol = pd.DataFrame(contexts)
-#    multicol.rename(columns={0:"Før", 1:"Ord",2:"Etter"}, inplace=True)
-    
-  #  if multicol.shape[1] == 5:
- #       multicol.rename(columns={3:"e2", 4: "e3"}, inplace=True)
-   #     multi_occ = multicol.loc[:,"e2"].notna()
-    #    multicol.loc[multi_occ, "Etter"] = multicol[multi_occ].apply(lambda x: x.Etter + x.e2 + x.e3, axis=1)
-     #   multicol.drop(columns=["e2", "e3"], inplace=True)
-    
-    multicol["URL"] = concs_meta.link.apply(extract_html_link)
-    multicol["URL"] = multicol.URL +  "?page=0&searchText=" + multicol.Ord.str.lower()
+    #    multicol.rename(columns={0:"Før", 1:"Ord",2:"Etter"}, inplace=True)
 
-    multicol["Tittel"] = concs_meta.title                
+    #  if multicol.shape[1] == 5:
+    #       multicol.rename(columns={3:"e2", 4: "e3"}, inplace=True)
+    #     multi_occ = multicol.loc[:,"e2"].notna()
+    #    multicol.loc[multi_occ, "Etter"] = multicol[multi_occ].apply(lambda x: x.Etter + x.e2 + x.e3, axis=1)
+    #   multicol.drop(columns=["e2", "e3"], inplace=True)
+
+    multicol["URL"] = concs_meta.link.apply(extract_html_link)
+    multicol["URL"] = multicol.URL + "?page=0&searchText=" + multicol.Ord.str.lower()
+
+    multicol["Tittel"] = concs_meta.title
     multicol["Forfatter"] = concs_meta.authors
     multicol["Årstall"] = concs_meta.year
     multicol["Type"] = concs_meta.doctype
