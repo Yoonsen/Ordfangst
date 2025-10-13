@@ -222,7 +222,7 @@ else:
                     from_year=from_year,
                     to_year=to_year,
                     limit_by_year=sample_by_year,
-                    limit=100,
+                    limit=doc_limit,
                 )
 
                 _w_concs = []
