@@ -1,7 +1,6 @@
 import dhlab as dh
 import dhlab.api.dhlab_api as api
 import pandas as pd
-import requests
 import streamlit as st
 
 import utils
