@@ -1,4 +1,4 @@
-dhlab >= 2.0.0
+dhlab >= 2.42.1
 pandas
 streamlit
 matplotlib
