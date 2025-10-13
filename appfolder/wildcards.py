@@ -209,7 +209,7 @@ else:
             sample_by_year = st.checkbox(
                 f"Sample fra inntil {doc_limit} {valid_doctypes[source_type].lower()}"
                 f" fra hvert år i valgt tidsperiode: {from_year} -> {to_year} "
-                f"(opptil {doc_limit * (int(to_year) - int(from_year))} totalt)"
+                f"(opptil {doc_limit * (int(to_year) - int(from_year) + 1)} totalt)"
             )
 
         ## LGJ: lar konk trigges av en knapp
