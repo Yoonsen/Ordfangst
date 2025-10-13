@@ -1,6 +1,7 @@
 import dhlab as dh
 import dhlab.api.dhlab_api as api
 import pandas as pd
+import requests
 import streamlit as st
 
 import utils
@@ -191,19 +192,43 @@ else:
 
         word_query = " OR ".join(chosen)
 
+        c1, c2, c3 = st.columns([1, 1, 1])
+
+        with c1:
+            valid_doctypes = {"digibok": "Bøker", "digavis": "Aviser"}
+            source_type = st.radio(
+                "Type dokument",
+                options=valid_doctypes.keys(),
+                format_func=lambda x: valid_doctypes[x],
+            )
+        with c2:
+            doc_limit = st.number_input(
+                "Antall dokumenter å hente konkordanser fra",
+                min_value=10,
+                max_value=1000,
+            )
+            sample_by_year = st.checkbox(
+                f"Sample fra inntil {doc_limit} {valid_doctypes[source_type].lower()}"
+                f" fra hvert år i valgt tidsperiode: {from_year} -> {to_year} "
+                f"(opptil {doc_limit * (int(to_year) - int(from_year))} totalt)"
+            )
+
         ## LGJ: lar konk trigges av en knapp
-        if st.button(f"Finn konkordanser for {word_query}"):
+        if c1.button(f"Finn konkordanser for {word_query}"):
             try:
                 _corpus = load_corpus(
+                    doctype=source_type,
                     fulltext=word_query,
+                    # unigram=chosen,
                     from_year=from_year,
                     to_year=to_year,
-                    limit="1000",
+                    limit_by_year=sample_by_year,
+                    limit=100,
                 )
 
                 _w_concs = []
                 for w in chosen:
-                    w_concs = dh.Concordance(corpus=_corpus, query=w, limit=5000)
+                    w_concs = dh.Concordance(corpus=_corpus, query=w, limit=5000)  # type: ignore
                     _w_concs.append(w_concs.frame)
 
                 _concs = pd.concat(_w_concs, axis=0)
