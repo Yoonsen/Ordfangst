@@ -2,7 +2,7 @@ FROM python:3.10-slim
 
 EXPOSE 8501
 
-WORKDIR /wildcards.py
+WORKDIR /app
 
 COPY requirements.txt ./requirements.txt
 
