@@ -1,6 +1,6 @@
 dhlab >= 2.42.1
 pandas
-streamlit
+streamlit>=1.52.0
 matplotlib
 numpy
 Pillow
